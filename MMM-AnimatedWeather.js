@@ -20,7 +20,7 @@ Module.register("MMM-AnimatedWeather", {
 		showWind: true,
 		showSummary: true,
 		showForecast: true,
-		forecastHours: 4,
+		forecastHours: 6,
 		iconSize: 100,
 		language: config.language || "en",
 		roundTemp: true

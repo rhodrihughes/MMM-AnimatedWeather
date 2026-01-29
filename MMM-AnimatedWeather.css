@@ -1,5 +1,11 @@
 /* MMM-AnimatedWeather Styles */
 
+/* Header styling - remove underline and center */
+.MMM-AnimatedWeather .module-header {
+	border-bottom: none;
+	text-align: center;
+}
+
 .mmm-animated-weather {
 	display: flex;
 	flex-direction: column;
@@ -31,7 +37,7 @@
 
 /* Weather description */
 .weather-summary {
-	font-size: 1.2em;
+	font-size: 1.3em;
 	opacity: 0.8;
 	text-transform: capitalize;
 	margin-top: 3px;
@@ -41,7 +47,7 @@
 .weather-details {
 	display: flex;
 	gap: 8px;
-	font-size: 1em;
+	font-size: 1.1em;
 	opacity: 0.8;
 	margin-top: 5px;
 }
@@ -55,8 +61,8 @@
 }
 
 .detail-icon {
-	width: 32px;
-	height: 32px;
+	width: 36px;
+	height: 36px;
 }
 
 /* Sun times row */
@@ -71,13 +77,13 @@
 	display: flex;
 	align-items: center;
 	gap: 3px;
-	font-size: 1em;
+	font-size: 1.1em;
 	opacity: 0.8;
 }
 
 .sun-icon {
-	width: 32px;
-	height: 32px;
+	width: 36px;
+	height: 36px;
 }
 
 .weather-loading,
