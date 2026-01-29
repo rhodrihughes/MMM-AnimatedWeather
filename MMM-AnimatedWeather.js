@@ -1,16 +1,16 @@
 /* MagicMirror²
  * Module: MMM-AnimatedWeather
  *
- * Displays current weather using OpenWeatherMap API with animated SVG icons
+ * Displays current weather using Open-Meteo API with animated SVG icons
  * By rhodrihughes
  * MIT Licensed.
  */
 
 Module.register("MMM-AnimatedWeather", {
 	defaults: {
-		apiKey: "",
 		latitude: 0,
 		longitude: 0,
+		locationName: "",
 		units: "metric", // metric or imperial
 		updateInterval: 10, // minutes
 		animationSpeed: 1000,
@@ -19,6 +19,8 @@ Module.register("MMM-AnimatedWeather", {
 		showHumidity: true,
 		showWind: true,
 		showSummary: true,
+		showForecast: true,
+		forecastHours: 4,
 		iconSize: 100,
 		language: config.language || "en",
 		roundTemp: true
@@ -38,15 +40,8 @@ Module.register("MMM-AnimatedWeather", {
 	start: function() {
 		Log.info("Starting module: " + this.name);
 		this.weatherData = null;
-		this.locationName = null;
 		this.loaded = false;
 		this.error = null;
-
-		if (!this.config.apiKey) {
-			this.error = "Please set your OpenWeatherMap API key in the config.";
-			this.updateDom();
-			return;
-		}
 
 		if (!this.config.latitude || !this.config.longitude) {
 			this.error = "Please set latitude and longitude in the config.";
@@ -69,7 +64,6 @@ Module.register("MMM-AnimatedWeather", {
 	// Request weather data from node_helper
 	getData: function() {
 		this.sendSocketNotification("GET_WEATHER", {
-			apiKey: this.config.apiKey,
 			latitude: this.config.latitude,
 			longitude: this.config.longitude,
 			units: this.config.units,
@@ -81,7 +75,6 @@ Module.register("MMM-AnimatedWeather", {
 	socketNotificationReceived: function(notification, payload) {
 		if (notification === "WEATHER_DATA") {
 			this.weatherData = payload;
-			this.locationName = payload.name || null;
 			this.loaded = true;
 			this.error = null;
 			this.updateDom(this.config.animationSpeed);
@@ -94,8 +87,8 @@ Module.register("MMM-AnimatedWeather", {
 
 	// Override getHeader to show location name
 	getHeader: function() {
-		if (this.locationName) {
-			return `${this.locationName}'s Weather`;
+		if (this.config.locationName) {
+			return `${this.config.locationName}'s Weather`;
 		}
 		return this.data.header || "";
 	},
@@ -115,14 +108,15 @@ Module.register("MMM-AnimatedWeather", {
 			return wrapper;
 		}
 
-		if (!this.weatherData) {
+		if (!this.weatherData || !this.weatherData.current) {
 			wrapper.innerHTML = '<div class="weather-error">No weather data available</div>';
 			return wrapper;
 		}
 
-		const weather = this.weatherData;
-		const iconCode = weather.weather?.[0]?.icon;
-		const description = weather.weather?.[0]?.description;
+		const current = this.weatherData.current;
+		const daily = this.weatherData.daily;
+		const hourly = this.weatherData.hourly;
+		const isDay = current.is_day === 1;
 
 		// Top row: Icon + Temperature
 		const topRow = document.createElement("div");
@@ -133,28 +127,28 @@ Module.register("MMM-AnimatedWeather", {
 		iconWrapper.className = "weather-icon-wrapper";
 		const icon = document.createElement("img");
 		icon.className = "weather-icon";
-		icon.src = this.file(`icons/fill/${this.getIconFile(iconCode)}`);
+		icon.src = this.file(`icons/fill/${this.getIconFile(current.weather_code, isDay)}`);
 		icon.style.width = `${this.config.iconSize}px`;
 		icon.style.height = `${this.config.iconSize}px`;
-		icon.alt = description || "Weather";
+		icon.alt = this.getWeatherDescription(current.weather_code);
 		iconWrapper.appendChild(icon);
 		topRow.appendChild(iconWrapper);
 
 		// Temperature
-		if (this.config.showTemperature && weather.main?.temp !== undefined) {
+		if (this.config.showTemperature && current.temperature_2m !== undefined) {
 			const tempWrapper = document.createElement("div");
 			tempWrapper.className = "weather-temp";
-			tempWrapper.innerHTML = `${this.formatTemp(weather.main.temp)}°`;
+			tempWrapper.innerHTML = `${this.formatTemp(current.temperature_2m)}°`;
 			topRow.appendChild(tempWrapper);
 		}
 
 		wrapper.appendChild(topRow);
 
 		// Weather description
-		if (this.config.showSummary && description) {
+		if (this.config.showSummary) {
 			const summaryWrapper = document.createElement("div");
 			summaryWrapper.className = "weather-summary";
-			summaryWrapper.innerHTML = description;
+			summaryWrapper.innerHTML = this.getWeatherDescription(current.weather_code);
 			wrapper.appendChild(summaryWrapper);
 		}
 
@@ -162,7 +156,7 @@ Module.register("MMM-AnimatedWeather", {
 		const detailsWrapper = document.createElement("div");
 		detailsWrapper.className = "weather-details";
 
-		if (this.config.showFeelsLike && weather.main?.feels_like !== undefined) {
+		if (this.config.showFeelsLike && current.apparent_temperature !== undefined) {
 			const feelsLike = document.createElement("div");
 			feelsLike.className = "weather-feelslike";
 			const feelsIcon = document.createElement("img");
@@ -170,12 +164,12 @@ Module.register("MMM-AnimatedWeather", {
 			feelsIcon.className = "detail-icon";
 			feelsLike.appendChild(feelsIcon);
 			const feelsText = document.createElement("span");
-			feelsText.innerHTML = `${this.formatTemp(weather.main.feels_like)}°`;
+			feelsText.innerHTML = `${this.formatTemp(current.apparent_temperature)}°`;
 			feelsLike.appendChild(feelsText);
 			detailsWrapper.appendChild(feelsLike);
 		}
 
-		if (this.config.showHumidity && weather.main?.humidity !== undefined) {
+		if (this.config.showHumidity && current.relative_humidity_2m !== undefined) {
 			const humidity = document.createElement("div");
 			humidity.className = "weather-humidity";
 			const humidityIcon = document.createElement("img");
@@ -183,12 +177,12 @@ Module.register("MMM-AnimatedWeather", {
 			humidityIcon.className = "detail-icon";
 			humidity.appendChild(humidityIcon);
 			const humidityText = document.createElement("span");
-			humidityText.innerHTML = `${weather.main.humidity}%`;
+			humidityText.innerHTML = `${current.relative_humidity_2m}%`;
 			humidity.appendChild(humidityText);
 			detailsWrapper.appendChild(humidity);
 		}
 
-		if (this.config.showWind && weather.wind?.speed !== undefined) {
+		if (this.config.showWind && current.wind_speed_10m !== undefined) {
 			const wind = document.createElement("div");
 			wind.className = "weather-wind";
 			const windIcon = document.createElement("img");
@@ -196,8 +190,8 @@ Module.register("MMM-AnimatedWeather", {
 			windIcon.className = "detail-icon";
 			wind.appendChild(windIcon);
 			const windText = document.createElement("span");
-			const windUnit = this.config.units === "imperial" ? "mph" : "m/s";
-			windText.innerHTML = `${Math.round(weather.wind.speed)} ${windUnit}`;
+			const windUnit = this.config.units === "imperial" ? "mph" : "km/h";
+			windText.innerHTML = `${Math.round(current.wind_speed_10m)} ${windUnit}`;
 			wind.appendChild(windText);
 			detailsWrapper.appendChild(wind);
 		}
@@ -205,7 +199,7 @@ Module.register("MMM-AnimatedWeather", {
 		wrapper.appendChild(detailsWrapper);
 
 		// Sun row: Sunrise and Sunset
-		if (weather.sys?.sunrise && weather.sys?.sunset) {
+		if (daily?.sunrise?.[0] && daily?.sunset?.[0]) {
 			const sunWrapper = document.createElement("div");
 			sunWrapper.className = "weather-sun";
 
@@ -216,7 +210,7 @@ Module.register("MMM-AnimatedWeather", {
 			sunriseIcon.className = "sun-icon";
 			sunriseDiv.appendChild(sunriseIcon);
 			const sunriseTime = document.createElement("span");
-			sunriseTime.innerHTML = this.formatTime(weather.sys.sunrise);
+			sunriseTime.innerHTML = this.formatTimeFromISO(daily.sunrise[0]);
 			sunriseDiv.appendChild(sunriseTime);
 			sunWrapper.appendChild(sunriseDiv);
 
@@ -227,7 +221,7 @@ Module.register("MMM-AnimatedWeather", {
 			sunsetIcon.className = "sun-icon";
 			sunsetDiv.appendChild(sunsetIcon);
 			const sunsetTime = document.createElement("span");
-			sunsetTime.innerHTML = this.formatTime(weather.sys.sunset);
+			sunsetTime.innerHTML = this.formatTimeFromISO(daily.sunset[0]);
 			sunsetDiv.appendChild(sunsetTime);
 			sunWrapper.appendChild(sunsetDiv);
 
@@ -235,31 +229,40 @@ Module.register("MMM-AnimatedWeather", {
 		}
 
 		// Hourly forecast row
-		if (weather.forecast && weather.forecast.length > 0) {
+		if (this.config.showForecast && hourly?.time && hourly?.temperature_2m) {
 			const forecastWrapper = document.createElement("div");
 			forecastWrapper.className = "weather-forecast";
 
-			weather.forecast.slice(0, 4).forEach((hour) => {
+			// Get current hour index
+			const now = new Date();
+			const currentHourIndex = hourly.time.findIndex(t => new Date(t) > now);
+			const startIndex = currentHourIndex > 0 ? currentHourIndex : 0;
+
+			for (let i = startIndex; i < startIndex + this.config.forecastHours && i < hourly.time.length; i++) {
 				const hourDiv = document.createElement("div");
 				hourDiv.className = "forecast-hour";
 
 				const timeDiv = document.createElement("div");
 				timeDiv.className = "forecast-time";
-				timeDiv.innerHTML = this.formatTime(hour.dt);
+				timeDiv.innerHTML = this.formatTimeFromISO(hourly.time[i]);
 				hourDiv.appendChild(timeDiv);
 
 				const iconImg = document.createElement("img");
 				iconImg.className = "forecast-icon";
-				iconImg.src = this.file(`icons/fill/${this.getIconFile(hour.weather?.[0]?.icon)}`);
+				// Determine if it's day based on hour
+				const hourDate = new Date(hourly.time[i]);
+				const hour = hourDate.getHours();
+				const forecastIsDay = hour >= 6 && hour < 20;
+				iconImg.src = this.file(`icons/fill/${this.getIconFile(hourly.weather_code?.[i] || 0, forecastIsDay)}`);
 				hourDiv.appendChild(iconImg);
 
 				const tempDiv = document.createElement("div");
 				tempDiv.className = "forecast-temp";
-				tempDiv.innerHTML = `${this.formatTemp(hour.main?.temp)}°`;
+				tempDiv.innerHTML = `${this.formatTemp(hourly.temperature_2m[i])}°`;
 				hourDiv.appendChild(tempDiv);
 
 				forecastWrapper.appendChild(hourDiv);
-			});
+			}
 
 			wrapper.appendChild(forecastWrapper);
 		}
@@ -267,9 +270,9 @@ Module.register("MMM-AnimatedWeather", {
 		return wrapper;
 	},
 
-	// Format unix timestamp to time string
-	formatTime: function(timestamp) {
-		const date = new Date(timestamp * 1000);
+	// Format ISO timestamp to time string
+	formatTimeFromISO: function(isoString) {
+		const date = new Date(isoString);
 		return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 	},
 
@@ -281,28 +284,71 @@ Module.register("MMM-AnimatedWeather", {
 		return temp.toFixed(1);
 	},
 
-	// Map OpenWeatherMap icon code to animated SVG file
-	getIconFile: function(iconCode) {
-		const iconMap = {
-			"01d": "clear-day.svg",
-			"01n": "clear-night.svg",
-			"02d": "partly-cloudy-day.svg",
-			"02n": "partly-cloudy-night.svg",
-			"03d": "cloudy.svg",
-			"03n": "cloudy.svg",
-			"04d": "overcast-day.svg",
-			"04n": "overcast-night.svg",
-			"09d": "drizzle.svg",
-			"09n": "drizzle.svg",
-			"10d": "partly-cloudy-day-rain.svg",
-			"10n": "partly-cloudy-night-rain.svg",
-			"11d": "thunderstorms-day.svg",
-			"11n": "thunderstorms-night.svg",
-			"13d": "snow.svg",
-			"13n": "snow.svg",
-			"50d": "fog-day.svg",
-			"50n": "fog-night.svg"
+	// Get weather description from WMO code
+	getWeatherDescription: function(code) {
+		const descriptions = {
+			0: "Clear sky",
+			1: "Mainly clear",
+			2: "Partly cloudy",
+			3: "Overcast",
+			45: "Foggy",
+			48: "Depositing rime fog",
+			51: "Light drizzle",
+			53: "Moderate drizzle",
+			55: "Dense drizzle",
+			61: "Slight rain",
+			63: "Moderate rain",
+			65: "Heavy rain",
+			66: "Light freezing rain",
+			67: "Heavy freezing rain",
+			71: "Slight snow",
+			73: "Moderate snow",
+			75: "Heavy snow",
+			77: "Snow grains",
+			80: "Slight rain showers",
+			81: "Moderate rain showers",
+			82: "Violent rain showers",
+			85: "Slight snow showers",
+			86: "Heavy snow showers",
+			95: "Thunderstorm",
+			96: "Thunderstorm with slight hail",
+			99: "Thunderstorm with heavy hail"
 		};
-		return iconMap[iconCode] || "not-available.svg";
+		return descriptions[code] || "Unknown";
+	},
+
+	// Map WMO weather code to animated SVG file
+	getIconFile: function(code, isDay) {
+		const dayNight = isDay ? "day" : "night";
+		
+		const iconMap = {
+			0: isDay ? "clear-day.svg" : "clear-night.svg",
+			1: isDay ? "clear-day.svg" : "clear-night.svg",
+			2: isDay ? "partly-cloudy-day.svg" : "partly-cloudy-night.svg",
+			3: isDay ? "overcast-day.svg" : "overcast-night.svg",
+			45: isDay ? "fog-day.svg" : "fog-night.svg",
+			48: isDay ? "fog-day.svg" : "fog-night.svg",
+			51: "drizzle.svg",
+			53: "drizzle.svg",
+			55: "drizzle.svg",
+			61: isDay ? "partly-cloudy-day-rain.svg" : "partly-cloudy-night-rain.svg",
+			63: "rain.svg",
+			65: "rain.svg",
+			66: "sleet.svg",
+			67: "sleet.svg",
+			71: isDay ? "partly-cloudy-day-snow.svg" : "partly-cloudy-night-snow.svg",
+			73: "snow.svg",
+			75: "snow.svg",
+			77: "snow.svg",
+			80: isDay ? "partly-cloudy-day-rain.svg" : "partly-cloudy-night-rain.svg",
+			81: "rain.svg",
+			82: "rain.svg",
+			85: isDay ? "partly-cloudy-day-snow.svg" : "partly-cloudy-night-snow.svg",
+			86: "snow.svg",
+			95: isDay ? "thunderstorms-day.svg" : "thunderstorms-night.svg",
+			96: isDay ? "thunderstorms-day.svg" : "thunderstorms-night.svg",
+			99: isDay ? "thunderstorms-day.svg" : "thunderstorms-night.svg"
+		};
+		return iconMap[code] || "not-available.svg";
 	}
 });

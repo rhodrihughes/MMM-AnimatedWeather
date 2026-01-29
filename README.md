@@ -1,14 +1,15 @@
 # MMM-AnimatedWeather
 
-A MagicMirror² module that displays current weather conditions using the [OpenWeatherMap API](https://openweathermap.org/) with animated SVG icons.
+A MagicMirror² module that displays current weather conditions using the [Open-Meteo API](https://open-meteo.com/) with animated SVG icons. No API key required.
 
 ## Features
 
 - Animated SVG weather icons
-- Current temperature
-- Feels like temperature
-- Humidity and wind speed
-- Customizable display options
+- Current temperature and conditions
+- Feels like temperature, humidity, and wind speed
+- Sunrise and sunset times
+- Hourly forecast
+- No API key required
 
 ## Installation
 
@@ -30,28 +31,20 @@ Add the module to your `config/config.js` file:
     module: "MMM-AnimatedWeather",
     position: "top_right",
     config: {
-        apiKey: "YOUR_OPENWEATHERMAP_API_KEY",
         latitude: 50.8315,
         longitude: -0.1457,
-        units: "metric"
+        locationName: "Brighton"
     }
 }
 ```
-
-### Getting an OpenWeatherMap API Key
-
-1. Visit [openweathermap.org](https://openweathermap.org/api)
-2. Sign up for a free account
-3. Go to API keys in your account
-4. Copy your API key
 
 ### Configuration Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `apiKey` | Your OpenWeatherMap API key (required) | `""` |
 | `latitude` | Location latitude (required) | `0` |
 | `longitude` | Location longitude (required) | `0` |
+| `locationName` | Name shown in header | `""` |
 | `units` | Unit system: `metric` or `imperial` | `"metric"` |
 | `updateInterval` | Update frequency in minutes | `10` |
 | `showTemperature` | Show current temperature | `true` |
@@ -59,15 +52,16 @@ Add the module to your `config/config.js` file:
 | `showHumidity` | Show humidity percentage | `true` |
 | `showWind` | Show wind speed | `true` |
 | `showSummary` | Show weather description | `true` |
-| `iconSize` | Size of weather icon in pixels | `100` |
+| `showForecast` | Show hourly forecast | `true` |
+| `forecastHours` | Number of forecast hours to show | `4` |
+| `iconSize` | Size of main weather icon in pixels | `100` |
 | `roundTemp` | Round temperatures to whole numbers | `true` |
-| `animationSpeed` | DOM update animation speed in ms | `1000` |
 
 ### Unit Systems
 
 | Unit | Temperature | Wind Speed |
 |------|-------------|------------|
-| `metric` | Celsius | m/s |
+| `metric` | Celsius | km/h |
 | `imperial` | Fahrenheit | mph |
 
 ## Example Configuration
@@ -77,18 +71,14 @@ Add the module to your `config/config.js` file:
     module: "MMM-AnimatedWeather",
     position: "top_right",
     config: {
-        apiKey: "YOUR_API_KEY",
         latitude: 51.5074,
         longitude: -0.1278,
+        locationName: "London",
         units: "metric",
         updateInterval: 15,
-        showTemperature: true,
-        showFeelsLike: true,
-        showHumidity: true,
-        showWind: true,
-        showSummary: true,
-        iconSize: 120,
-        roundTemp: true
+        showForecast: true,
+        forecastHours: 4,
+        iconSize: 100
     }
 }
 ```

@@ -21,73 +21,53 @@ module.exports = NodeHelper.create({
 
 	getWeatherData: function(config) {
 		const self = this;
-		const units = config.units === "imperial" ? "imperial" : "metric";
 		
-		// Fetch current weather
-		const currentUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${config.latitude}&lon=${config.longitude}&appid=${config.apiKey}&units=${units}&lang=${config.language}`;
-		
-		// Fetch forecast
-		const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${config.latitude}&lon=${config.longitude}&appid=${config.apiKey}&units=${units}&lang=${config.language}&cnt=6`;
+		// Open-Meteo API - no key required
+		const params = new URLSearchParams({
+			latitude: config.latitude,
+			longitude: config.longitude,
+			current: "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day",
+			hourly: "temperature_2m,weather_code",
+			daily: "sunrise,sunset",
+			timezone: "auto",
+			forecast_days: 1,
+			forecast_hours: 12
+		});
 
-		console.log("[MMM-AnimatedWeather] Fetching weather data from OpenWeatherMap...");
+		if (config.units === "imperial") {
+			params.append("temperature_unit", "fahrenheit");
+			params.append("wind_speed_unit", "mph");
+		}
 
-		let currentData = null;
-		let forecastData = null;
-		let completed = 0;
+		const url = `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
 
-		const checkComplete = () => {
-			completed++;
-			if (completed === 2) {
-				if (currentData) {
-					currentData.forecast = forecastData?.list || [];
-					self.sendSocketNotification("WEATHER_DATA", currentData);
-				}
-			}
-		};
+		console.log("[MMM-AnimatedWeather] Fetching weather data from Open-Meteo...");
 
-		// Get current weather
-		https.get(currentUrl, (res) => {
+		https.get(url, (res) => {
 			let data = "";
-			res.on("data", (chunk) => { data += chunk; });
+
+			res.on("data", (chunk) => {
+				data += chunk;
+			});
+
 			res.on("end", () => {
 				if (res.statusCode === 200) {
 					try {
-						currentData = JSON.parse(data);
-						console.log("[MMM-AnimatedWeather] Current weather received");
+						const weatherData = JSON.parse(data);
+						console.log("[MMM-AnimatedWeather] Weather data received successfully");
+						self.sendSocketNotification("WEATHER_DATA", weatherData);
 					} catch (error) {
-						console.error("[MMM-AnimatedWeather] Error parsing current weather:", error);
+						console.error("[MMM-AnimatedWeather] Error parsing weather data:", error);
 						self.sendSocketNotification("WEATHER_ERROR", "Error parsing weather data");
 					}
 				} else {
 					console.error("[MMM-AnimatedWeather] API error:", res.statusCode);
 					self.sendSocketNotification("WEATHER_ERROR", `API Error: ${res.statusCode}`);
 				}
-				checkComplete();
 			});
 		}).on("error", (error) => {
 			console.error("[MMM-AnimatedWeather] Request error:", error);
 			self.sendSocketNotification("WEATHER_ERROR", "Network error: " + error.message);
-			checkComplete();
-		});
-
-		// Get forecast
-		https.get(forecastUrl, (res) => {
-			let data = "";
-			res.on("data", (chunk) => { data += chunk; });
-			res.on("end", () => {
-				if (res.statusCode === 200) {
-					try {
-						forecastData = JSON.parse(data);
-						console.log("[MMM-AnimatedWeather] Forecast received");
-					} catch (error) {
-						console.error("[MMM-AnimatedWeather] Error parsing forecast:", error);
-					}
-				}
-				checkComplete();
-			});
-		}).on("error", (error) => {
-			console.error("[MMM-AnimatedWeather] Forecast request error:", error);
-			checkComplete();
 		});
 	}
 });
