@@ -1,0 +1,122 @@
+/* MMM-AnimatedWeather Styles */
+
+.mmm-animated-weather {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	color: #fff;
+}
+
+/* Top row: Icon + Temperature */
+.weather-top-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.weather-icon-wrapper {
+	flex-shrink: 0;
+}
+
+.weather-icon {
+	filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+	display: block;
+}
+
+.weather-temp {
+	font-size: 3.5em;
+	font-weight: 300;
+	line-height: 1;
+}
+
+/* Weather description */
+.weather-summary {
+	font-size: 1.2em;
+	opacity: 0.8;
+	text-transform: capitalize;
+	margin-top: 3px;
+}
+
+/* Details row */
+.weather-details {
+	display: flex;
+	gap: 8px;
+	font-size: 1em;
+	opacity: 0.8;
+	margin-top: 5px;
+}
+
+.weather-feelslike,
+.weather-humidity,
+.weather-wind {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+
+.detail-icon {
+	width: 32px;
+	height: 32px;
+}
+
+/* Sun times row */
+.weather-sun {
+	display: flex;
+	gap: 15px;
+	margin-top: 5px;
+}
+
+.weather-sunrise,
+.weather-sunset {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	font-size: 1em;
+	opacity: 0.8;
+}
+
+.sun-icon {
+	width: 32px;
+	height: 32px;
+}
+
+.weather-loading,
+.weather-error {
+	font-size: 1em;
+	opacity: 0.7;
+	padding: 20px;
+}
+
+.weather-error {
+	color: #ff6b6b;
+}
+
+/* Hourly forecast row */
+.weather-forecast {
+	display: flex;
+	gap: 12px;
+	margin-top: 8px;
+	padding-top: 8px;
+	border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.forecast-hour {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+}
+
+.forecast-time {
+	font-size: 0.8em;
+	opacity: 0.7;
+}
+
+.forecast-icon {
+	width: 36px;
+	height: 36px;
+}
+
+.forecast-temp {
+	font-size: 0.9em;
+}

@@ -1,32 +1,18 @@
 {
-  "name": "mmm-animatedweather",
-  "version": "1.0.0",
-  "description": "[Module description]",
-  "main": "MMM-AnimatedWeather.js",
-  "scripts": {
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
-    "test": "node --run lint"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rhodrihughes/MMM-AnimatedWeather.git"
-  },
-  "keywords": [
-    "template"
-  ],
-  "author": "Rhodri Hughes",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/rhodrihughes/MMM-AnimatedWeather/issues"
-  },
-  "homepage": "https://github.com/rhodrihughes/MMM-AnimatedWeather#readme",
-  "devDependencies": {
-    "@eslint/css": "^0.9.0",
-    "@eslint/js": "^9.30.1",
-    "@eslint/markdown": "^6.6.0",
-    "@stylistic/eslint-plugin": "^5.1.0",
-    "eslint": "^9.30.1",
-    "globals": "^16.3.0"
-  }
+	"name": "mmm-animatedweather",
+	"version": "1.0.0",
+	"description": "MagicMirror² module displaying weather with animated SVG icons using PirateWeather API",
+	"main": "MMM-AnimatedWeather.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/rhodrihughes/MMM-AnimatedWeather"
+	},
+	"keywords": [
+		"MagicMirror",
+		"weather",
+		"animated",
+		"pirateweather"
+	],
+	"author": "rhodrihughes",
+	"license": "MIT"
 }
