@@ -1,8 +1,8 @@
 {
-  "name": "mmm-template",
+  "name": "mmm-animatedweather",
   "version": "1.0.0",
   "description": "[Module description]",
-  "main": "MMM-Template.js",
+  "main": "MMM-AnimatedWeather.js",
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -10,17 +10,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+[GitHub url].git"
+    "url": "git+https://github.com/rhodrihughes/MMM-AnimatedWeather.git"
   },
   "keywords": [
     "template"
   ],
-  "author": "[Author]",
+  "author": "Rhodri Hughes",
   "license": "MIT",
   "bugs": {
-    "url": "[GitHub url]/issues"
+    "url": "https://github.com/rhodrihughes/MMM-AnimatedWeather/issues"
   },
-  "homepage": "[GitHub url]#readme",
+  "homepage": "https://github.com/rhodrihughes/MMM-AnimatedWeather#readme",
   "devDependencies": {
     "@eslint/css": "^0.9.0",
     "@eslint/js": "^9.30.1",
