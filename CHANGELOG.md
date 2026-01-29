@@ -16,3 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 1.1.0 - 2026-01-29
 ### Added
 - 6 hour forecast
+
+## 1.2.0 - 2026-01-29
+### Added
+- Ability to switch between animated and still icons for everything bar the main weather icon to save system resoources

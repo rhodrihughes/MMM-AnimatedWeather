@@ -33,7 +33,8 @@ Add the module to your `config/config.js` file:
     config: {
         latitude: 50.8315,
         longitude: -0.1457,
-        locationName: "Brighton"
+        locationName: "Brighton",
+        animateAllIcons: false
     }
 }
 ```
@@ -53,7 +54,8 @@ Add the module to your `config/config.js` file:
 | `showWind` | Show wind speed | `true` |
 | `showSummary` | Show weather description | `true` |
 | `showForecast` | Show hourly forecast | `true` |
-| `forecastHours` | Number of forecast hours to show | `4` |
+| `forecastHours` | Number of forecast hours to show | `6` |
+| `animateAllIcons` | Animate all icons (false = only main icon animated) | `false` |
 | `iconSize` | Size of main weather icon in pixels | `100` |
 | `roundTemp` | Round temperatures to whole numbers | `true` |
 

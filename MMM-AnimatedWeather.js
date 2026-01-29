@@ -22,6 +22,7 @@ Module.register("MMM-AnimatedWeather", {
 		showForecast: true,
 		forecastHours: 6,
 		iconSize: 100,
+		animateAllIcons: false, // true = all animated, false = only main icon animated
 		language: config.language || "en",
 		roundTemp: true
 	},
@@ -160,7 +161,7 @@ Module.register("MMM-AnimatedWeather", {
 			const feelsLike = document.createElement("div");
 			feelsLike.className = "weather-feelslike";
 			const feelsIcon = document.createElement("img");
-			feelsIcon.src = this.file("icons/fill/thermometer-glass.svg");
+			feelsIcon.src = this.file(this.getStaticIconPath("thermometer-glass.svg"));
 			feelsIcon.className = "detail-icon";
 			feelsLike.appendChild(feelsIcon);
 			const feelsText = document.createElement("span");
@@ -173,7 +174,7 @@ Module.register("MMM-AnimatedWeather", {
 			const humidity = document.createElement("div");
 			humidity.className = "weather-humidity";
 			const humidityIcon = document.createElement("img");
-			humidityIcon.src = this.file("icons/fill/humidity.svg");
+			humidityIcon.src = this.file(this.getStaticIconPath("humidity.svg"));
 			humidityIcon.className = "detail-icon";
 			humidity.appendChild(humidityIcon);
 			const humidityText = document.createElement("span");
@@ -186,7 +187,7 @@ Module.register("MMM-AnimatedWeather", {
 			const wind = document.createElement("div");
 			wind.className = "weather-wind";
 			const windIcon = document.createElement("img");
-			windIcon.src = this.file("icons/fill/wind.svg");
+			windIcon.src = this.file(this.getStaticIconPath("wind.svg"));
 			windIcon.className = "detail-icon";
 			wind.appendChild(windIcon);
 			const windText = document.createElement("span");
@@ -206,7 +207,7 @@ Module.register("MMM-AnimatedWeather", {
 			const sunriseDiv = document.createElement("div");
 			sunriseDiv.className = "weather-sunrise";
 			const sunriseIcon = document.createElement("img");
-			sunriseIcon.src = this.file("icons/fill/sunrise.svg");
+			sunriseIcon.src = this.file(this.getStaticIconPath("sunrise.svg"));
 			sunriseIcon.className = "sun-icon";
 			sunriseDiv.appendChild(sunriseIcon);
 			const sunriseTime = document.createElement("span");
@@ -217,7 +218,7 @@ Module.register("MMM-AnimatedWeather", {
 			const sunsetDiv = document.createElement("div");
 			sunsetDiv.className = "weather-sunset";
 			const sunsetIcon = document.createElement("img");
-			sunsetIcon.src = this.file("icons/fill/sunset.svg");
+			sunsetIcon.src = this.file(this.getStaticIconPath("sunset.svg"));
 			sunsetIcon.className = "sun-icon";
 			sunsetDiv.appendChild(sunsetIcon);
 			const sunsetTime = document.createElement("span");
@@ -253,7 +254,7 @@ Module.register("MMM-AnimatedWeather", {
 				const hourDate = new Date(hourly.time[i]);
 				const hour = hourDate.getHours();
 				const forecastIsDay = hour >= 6 && hour < 20;
-				iconImg.src = this.file(`icons/fill/${this.getIconFile(hourly.weather_code?.[i] || 0, forecastIsDay)}`);
+				iconImg.src = this.file(this.getStaticIconPath(this.getIconFile(hourly.weather_code?.[i] || 0, forecastIsDay)));
 				hourDiv.appendChild(iconImg);
 
 				const tempDiv = document.createElement("div");
@@ -315,6 +316,14 @@ Module.register("MMM-AnimatedWeather", {
 			99: "Thunderstorm with heavy hail"
 		};
 		return descriptions[code] || "Unknown";
+	},
+
+	// Get path for static/animated icons based on config
+	getStaticIconPath: function(iconName) {
+		if (this.config.animateAllIcons) {
+			return `icons/fill/${iconName}`;
+		}
+		return `icons/fill-still/still_${iconName}`;
 	},
 
 	// Map WMO weather code to animated SVG file
