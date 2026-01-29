@@ -55,7 +55,7 @@ Add the module to your `config/config.js` file:
 | `showSummary` | Show weather description | `true` |
 | `showForecast` | Show hourly forecast | `true` |
 | `forecastHours` | Number of forecast hours to show | `6` |
-| `animateAllIcons` | Animate all icons (false = only main icon animated) | `false` |
+| `animateAllIcons` | Animate all icons (false = only main icon animated) | `true` |
 | `iconSize` | Size of main weather icon in pixels | `100` |
 | `roundTemp` | Round temperatures to whole numbers | `true` |
 
